@@ -1,0 +1,128 @@
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  # HTTP API Gateway
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub ${ResourceName} From Stack ${AWS::StackName}
+      StageName: Prod
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - POST
+        MaxAge: 5
+
+  # S3 Bucket for storing Bedrock responses
+  ResponseS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-bedrock-responses
+      VersioningConfiguration:
+        Status: Enabled
+
+  # IAM Role for Lambda functions with required permissions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: GeneralLambdaPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt ResponseS3Bucket.Arn
+                  - !Sub ${ResponseS3Bucket.Arn}/*
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel # Permission to invoke Bedrock models
+                Resource: '*' # You can restrict this to specific Bedrock model ARNs if needed
+
+  # LambdaFunction1 (Triggered by HTTP API)
+  LambdaFunction1:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-LambdaFunction1
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://your-code-bucket/lambda1.zip # Replace with your actual code location
+      Environment:
+        Variables:
+          NEXT_LAMBDA_ARN: !GetAtt LambdaFunction2.Arn
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /master-function-convertjson
+            Method: POST
+
+  # LambdaFunction2 (Invoked by LambdaFunction1)
+  LambdaFunction2:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-LambdaFunction2
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://your-code-bucket/lambda2.zip # Replace with your actual code location
+      Environment:
+        Variables:
+          NEXT_LAMBDA_ARN: !GetAtt LambdaFunction3.Arn
+
+  # LambdaFunction3 (Invoked by LambdaFunction2, calls Bedrock and saves to S3)
+  LambdaFunction3:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-LambdaFunction3
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: s3://your-code-bucket/lambda3.zip # Replace with your actual code location
+      Environment:
+        Variables:
+          OUTPUT_BUCKET: !Ref ResponseS3Bucket
+          BEDROCK_MODEL_ID: mistral-7b # Adjust model ID as needed
+      Timeout: 60 # Increased timeout to handle Bedrock processing
+
+  # Permissions for HTTP API to invoke LambdaFunction1
+  ApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LambdaFunction1
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/POST/master-function-convertjson
+
+Outputs:
+  ApiGatewayInvokeURL:
+    Description: Invoke URL for the HTTP API Gateway
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod/master-function-convertjson
+
+  ResponseS3BucketName:
+    Description: S3 bucket for storing Bedrock responses
+    Value: !Ref ResponseS3Bucket
