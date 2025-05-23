@@ -35,7 +35,39 @@ It uses AWS Lambda, API Gateway, and Amazon S3 for a fully serverless, scalable 
 ### Installation
 
 1. Clone this repo:
-
-   ```bash
    git clone https://github.com/Gr150/AWS-Bedrock-AI-app-task.git
    cd AWS-Bedrock-AI-app-task
+
+2. Build the project
+   sam build
+
+3.Deploy the app
+   sam deploy --guided
+
+
+## Usage
+
+- Upload a `.fdx` screenplay file via the API endpoint.
+- Trigger summarization using the appropriate API.
+- Get a clean summary of the uploaded content powered by AWS Bedrock.
+
+## Project Structure
+
+├── Lambda functions/
+├── converted_file.json
+├── architecture diagram.png
+├── sample_script.fdx
+├── scriptify template.yaml
+├── Scriptify App Documentation.pdf
+├── Technical Challenge 3Gi.pdf
+└── README.md
+
+
+
+## Documentation
+
+See `Scriptify App Documentation.pdf` for full technical details, and `Technical Challenge 3Gi.pdf` for the problem statement.
+
+## License
+
+This project is licensed under the MIT License.
