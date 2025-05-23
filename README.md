@@ -1,89 +1,41 @@
-Overview
-This project demonstrates the integration of AWS Bedrock's AI capabilities into a serverless application. The application processes user-uploaded screenplay files, extracts meaningful content, and generates summaries using AI models. It leverages AWS services such as Lambda, S3, and API Gateway to create a scalable and efficient workflow.
+# AWS-Bedrock-AI-app-task
 
-Features
-File Upload: Users can upload screenplay files (e.g., .fdx format) to the application.
+## Overview
 
-Content Extraction: The application parses the uploaded files to extract relevant content.
+This project showcases how to integrate AWS Bedrock's AI capabilities into a serverless application. The app allows users to upload screenplay files, extract meaningful content, and generate summaries using AI models via AWS Bedrock.
 
-AI Summarization: Utilizes AWS Bedrock to generate summaries of the extracted content.
+It uses AWS Lambda, API Gateway, and Amazon S3 for a fully serverless, scalable solution.
 
-Serverless Architecture: Built using AWS Lambda functions and managed via AWS SAM (Serverless Application Model).
+## Features
 
-Scalable and Efficient: Designed to handle multiple requests with minimal latency.
+- 📄 Upload screenplay files (`.fdx` format)
+- ✂️ Extract relevant content using Lambda
+- 🤖 Generate AI-based summaries using AWS Bedrock
+- ⚙️ Serverless deployment via AWS SAM
+- ☁️ Scalable architecture using AWS services
 
-Architecture
+## Architecture
 
-The application follows a serverless architecture:
+![Architecture Diagram](architecture%20diagram.png)
 
-API Gateway: Serves as the entry point for file uploads and summary requests.
+1. **API Gateway** – Accepts user file uploads and summary requests  
+2. **AWS Lambda** – Handles file processing and calls AWS Bedrock  
+3. **Amazon S3** – Stores raw files and processed content  
+4. **AWS Bedrock** – Generates summaries using foundation models
 
-AWS Lambda: Handles file processing, content extraction, and interaction with AWS Bedrock.
+## Getting Started
 
-Amazon S3: Stores uploaded files and processed outputs.
+### Prerequisites
 
-AWS Bedrock: Provides AI capabilities for content summarization.
+- AWS Account with Bedrock access
+- AWS CLI configured
+- AWS SAM CLI installed
+- Python 3.8 or newer
 
-Getting Started
-Prerequisites
-AWS Account with appropriate permissions.
+### Installation
 
-AWS CLI configured on your local machine.
+1. Clone this repo:
 
-AWS SAM CLI installed.
-
-Python 3.8 or higher.
-
-Installation
-Clone the Repository:
-
-bash
-Copy
-Edit
-git clone https://github.com/Gr150/AWS-Bedrock-AI-app-task.git
-cd AWS-Bedrock-AI-app-task
-Build the Application:
-
-bash
-Copy
-Edit
-sam build
-Deploy the Application:
-
-bash
-Copy
-Edit
-sam deploy --guided
-Follow the prompts to set up your stack name, AWS region, and other configurations.
-
-Usage
-Upload a Screenplay File:
-
-Use the provided API endpoint to upload a .fdx file.
-
-Generate Summary:
-
-After uploading, invoke the summary endpoint to receive an AI-generated summary of the screenplay.
-
-Project Structure
-Lambda functions/: Contains the AWS Lambda function code.
-
-scriptify template.yaml: AWS SAM template defining the application's infrastructure.
-
-architecture diagram.png: Visual representation of the application's architecture.
-
-sample_script.fdx: Sample screenplay file for testing.
-
-converted_file.json: Example of extracted content from a screenplay.
-
-README.md: This file.
-
-Scriptify App Documentation.pdf: Detailed documentation of the application.
-
-Technical Challenge 3Gi.pdf: Original technical challenge description.
-
-Contributing
-Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
-
-License
-This project is licensed under the MIT License.
+   ```bash
+   git clone https://github.com/Gr150/AWS-Bedrock-AI-app-task.git
+   cd AWS-Bedrock-AI-app-task
